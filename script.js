@@ -2,115 +2,101 @@ let booking = {};
 let selectedFlight = null;
 let passenger = {};
 
+// Get all steps and progress indicators
 const steps = document.querySelectorAll(".step");
 const progress = document.querySelectorAll(".progress-step");
 
+// Show a specific step by index (0 = Booking, 1 = Flights, 2 = Passenger, 3 = Summary)
 function showStep(index) {
-  steps.forEach((s, i) => s.classList.toggle("active", i === index));
-  progress.forEach((p, i) => p.classList.toggle("active", i <= index));
+  steps.forEach((step, i) => {
+    step.classList.toggle("active", i === index);
+  });
+  progress.forEach((prog, i) => {
+    prog.classList.toggle("active", i <= index);
+  });
 }
 
-document.getElementById("flightType").addEventListener("change", e => {
-  document.getElementById("returnDiv").style.display =
-    e.target.value === "round" ? "block" : "none";
-});
-
-document.getElementById("bookingForm").addEventListener("submit", e => {
+// Handle booking form submission
+document.getElementById("bookingForm").addEventListener("submit", (e) => {
   e.preventDefault();
-
   booking = {
     from: document.getElementById("from").value,
     to: document.getElementById("to").value,
-    type: document.getElementById("flightType").value,
-    depart: document.getElementById("departDate").value,
-    returnDate: document.getElementById("returnDate").value,
-    passengers: document.getElementById("numPassengers").value
+    depart: document.getElementById("departDate").value
   };
-
-  renderFlights();
+  showFlights();
   showStep(1);
 });
 
-function renderFlights() {
+// Show available flights
+function showFlights() {
   const list = document.getElementById("flightsList");
   list.innerHTML = "";
-
-  const sampleFlights = [
-    { no: "5J560", time: "08:00 AM", price: 2500, fare: "Promo" },
-    { no: "PR214", time: "10:30 AM", price: 3000, fare: "Regular" },
-    { no: "Z243", time: "2:00 PM", price: 2800, fare: "Promo" }
+  const flights = [
+    { no: "FL101", time: "8:00 AM", price: 2000 },
+    { no: "FL202", time: "12:00 PM", price: 2500 }
   ];
-
-  sampleFlights.forEach(f => {
+  flights.forEach((flight) => {
     const card = document.createElement("div");
-    card.classList.add("flight-card");
+    card.className = "flight-card";
     card.innerHTML = `
       <div>
-        <p><strong>${booking.from}</strong> → <strong>${booking.to}</strong></p>
-        <p>Flight No: ${f.no}</p>
-        <p>Depart: ${booking.depart} - ${f.time}</p>
-        <p>Fare Type: ${f.fare}</p>
+        <p>${booking.from} to ${booking.to}</p>
+        <p>Flight: ${flight.no}, ${flight.time}</p>
       </div>
-      <div style="text-align:right;">
-        <p><strong>₱${f.price}</strong></p>
+      <div>
+        <p>₱${flight.price}</p>
         <button class="btn-primary">Select</button>
       </div>
     `;
     card.querySelector("button").addEventListener("click", () => {
-      selectedFlight = f;
+      selectedFlight = flight;
       showStep(2);
     });
     list.appendChild(card);
   });
 }
 
-document.getElementById("passengerForm").addEventListener("submit", e => {
+// Handle passenger form submission
+document.getElementById("passengerForm").addEventListener("submit", (e) => {
   e.preventDefault();
   passenger = {
-    name: document.getElementById("pName").value,
-    age: document.getElementById("pAge").value,
-    gender: document.getElementById("pGender").value
+    name: document.getElementById("pName").value
   };
   showSummary();
   showStep(3);
 });
 
+// Show booking summary
 function showSummary() {
   const card = document.getElementById("summaryCard");
-  const total = selectedFlight.price * booking.passengers;
   card.innerHTML = `
     <p><strong>From:</strong> ${booking.from}</p>
     <p><strong>To:</strong> ${booking.to}</p>
-    <p><strong>Flight No:</strong> ${selectedFlight.no}</p>
+    <p><strong>Flight:</strong> ${selectedFlight.no}</p>
     <p><strong>Date:</strong> ${booking.depart}</p>
-    <p><strong>Passenger:</strong> ${passenger.name} (${passenger.gender}, ${passenger.age})</p>
-    <p><strong>Total:</strong> ₱${total}</p>
-    <p><strong>Terminal:</strong> Terminal 3</p>
+    <p><strong>Passenger:</strong> ${passenger.name}</p>
+    <p><strong>Total:</strong> ₱${selectedFlight.price}</p>
   `;
 }
 
+// Handle book now button
 document.getElementById("bookNow").addEventListener("click", () => {
   const toast = document.getElementById("toast");
-  const passengerName = document.getElementById("passengerName")?.value || "Valued Guest";
-
-  toast.innerHTML = `
-    🎉 <strong>Booking Successful!</strong><br>
-    Thank you, <strong>${passengerName}</strong>, for choosing <strong>AirLines</strong>.
-  `;
-
+  toast.innerHTML = `Booking Successful, ${passenger.name}!`;
   toast.classList.add("show");
-
   setTimeout(() => {
     toast.classList.remove("show");
-  }, 4000);
-
-  showStep(0); 
+  }, 3000);
+  showStep(0);
 });
 
-
-document.querySelectorAll(".prev").forEach(btn => {
+// Handle back buttons
+document.querySelectorAll(".prev").forEach((btn) => {
   btn.addEventListener("click", () => {
-    const current = [...steps].findIndex(s => s.classList.contains("active"));
-    if (current > 0) showStep(current - 1);
+    const currentStep = Array.from(steps).findIndex((s) => s.classList.contains("active"));
+    if (currentStep > 0) {
+      showStep(currentStep - 1);
+    }
   });
 });
